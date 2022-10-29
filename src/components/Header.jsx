@@ -1,9 +1,11 @@
 import React from "react";
+import Logo from "./Logo";
+import "./Header.css";
 
 function Header() {
-    return <header>
-        <h1>faceTwitterGram React prototype</h1>
-    </header>
+    return <div className="wrapper">
+        <Logo /><h1 className="hmm"> React prototype</h1>
+    </div>
 }
 
 export default Header;

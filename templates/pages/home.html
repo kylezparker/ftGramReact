@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+home
+{% endblock title %}
+
+
+{% block content %}
+howdy
+<div id="shares">
+    Replace me
+</div>
+<script>
+    const sharesElement = document.getElementById("shares")   // get element. pass by reference
+    sharesElement.innerHTML = 'Loading...'    // set new html in element
+
+    var el1 = "<h1>hi 1</h1>"
+    var el2 = "<h1>hi 2</h1>"
+    var el3 = "<h1>hi 3</h1>"
+    sharesElement.innerHTML = el1 + el2 + el3
+
+
+    const xhr = new XMLHttpRequest()
+    const method = 'GET'
+    const url = "/friends"
+    const responseType = "json"
+
+    xhr.responseType = responseType
+    xhr.open(method, url)
+    xhr.onload = function () {
+        const serverResponse = xhr.response
+        var listedItems = serverResponse.response
+        console.log(listedItems)
+    }
+    xhr.send()
+
+</script>
+{% endblock content %}

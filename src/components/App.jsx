@@ -26,7 +26,9 @@ function App() {
     }
     console.log(shares);
     return <div>
-        <Header />
+        <div className="header" >
+            <Header />
+        </div>
         <CreateArea onAdd={addShare} />
         {shares.map((shareItem, index) => {
             return (
