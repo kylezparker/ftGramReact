@@ -15,11 +15,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from friends.views import home_view, share_detail_view, share_list_view
+from friends.views import (
+    home_view, share_detail_view, 
+    share_list_view,share_create_view
+)
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', home_view),
+    path('create-share', share_create_view),
     path('friends', share_list_view),
     path('friends/<int:share_id>', share_detail_view),
 ]

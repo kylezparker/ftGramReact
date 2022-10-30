@@ -7,33 +7,125 @@ home
 
 
 {% block content %}
-howdy
-<div id="shares">
-    Replace me
+<div class='row text-center'>
+    <div class='col mb-2'>
+        <h1>Welcome to faceTwitterGram</h1>
+    </div>
+</div>
+
+<div class='row mb-3'>
+    <div class="col-md-4 mx-auto col-10">
+        <form class="form" id='share-create-form' method="POST" action="/create-share">
+            {% csrf_token %}
+            <input type="hidden" value="/" name="next" />
+            <textarea class="form-control" name="content" placeholder="Your tweet..."></textarea>
+            <button type="submit" class="btn btn-primary">Share</button>
+        </form>
+    </div>
+</div>
+
+<div class="row" id="shares">
+    Loading...
 </div>
 <script>
-    const sharesElement = document.getElementById("shares")   // get element. pass by reference
-    sharesElement.innerHTML = 'Loading...'    // set new html in element
 
-    var el1 = "<h1>hi 1</h1>"
-    var el2 = "<h1>hi 2</h1>"
-    var el3 = "<h1>hi 3</h1>"
-    sharesElement.innerHTML = el1 + el2 + el3
-
-
-    const xhr = new XMLHttpRequest()
-    const method = 'GET'
-    const url = "/friends"
-    const responseType = "json"
-
-    xhr.responseType = responseType
-    xhr.open(method, url)
-    xhr.onload = function () {
-        const serverResponse = xhr.response
-        var listedItems = serverResponse.response
-        console.log(listedItems)
+    function handleShareCreateFormDidSubmit(event) {
+        event.preventDefault();
+        const myForm = event.target;
+        const myFormData = new FormData(myForm);
+        const url = myForm.getAttribute("action");
+        const method = myForm.getAttribute("method");
+        // console.log(endpoint, method)
+        const xhr1 = new XMLHttpRequest();
+        xhr1.open(method, url);
+        xhr1.setRequestHeader("HTTP_X_REQUESTED_WITH", "XMLHttpRequest")
+        xhr1.setRequestHeader("X-Requested-With", "XMLHttpRequest")
+        xhr1.onload = function () {
+            const serverResponse = xhr1.response;
+            // console.log(serverResponse)
+            loadShares(sharesElement)
+        }
+        xhr1.send(myFormData)
+        // for (var myItem of myFormData.entries()) {
+        //     console.log(myItem)
+        // }
+        // console.log(event)
     }
-    xhr.send()
+    // will use to create event listener
+    const shareCreateFormElement = document.getElementById("share-create-form");
+
+    shareCreateFormElement.addEventListener("submit", handleShareCreateFormDidSubmit);
+
+    const sharesElement = document.getElementById("shares");   // get element. pass by reference
+
+
+
+    // will help eventually dynamically load shares
+    function loadShares(sharesElement) {
+        const xhr = new XMLHttpRequest();
+        const responseType = "json";
+        const method = 'GET';
+        const url = "/friends";
+        xhr.responseType = responseType;
+        xhr.open(method, url)
+        xhr.onload = function () {
+            const serverResponse = xhr.response;
+            const listedItems = serverResponse.response;
+            var finalShareStr = "";
+            var i;
+            for (i = 0; i < listedItems.length; i++) {
+                // console.log(i)
+                // console.log(listedItems[i])
+                var shareObj = listedItems[i];
+                var currentItem = formatShareElement(shareObj);
+                finalShareStr += currentItem;
+            }
+            sharesElement.innerHTML = finalShareStr;
+        }// console.log(listedItems);
+        xhr.send()
+    }
+
+    loadShares(sharesElement)
+
+
+
+
+
+
+    function handleDidLike(share_id, currentCount) {
+        console.log(share_id, currentCount)
+        return
+    }
+
+    function LikeBtn(share) {
+        return "<button class='btn btn-primary btn-sm' onclick=handleDidLike(" + share.id + ","
+            + share.likes + ")>" + share.likes + " Like</button>";
+    }
+    function formatShareElement(share) {
+        var formattedShare = "<div class='col-12 col-md-10 mx-auto border rounded py-3 mb-4 share' id='share-" + share.id + "'><p>"
+            + share.content + "</p><div class='btn-group'>" + LikeBtn(share) + "</div></div>";
+        return formattedShare;
+    }
+
+
+    // xhr.responseType = responseType;
+    // xhr.open(method, url)
+    // xhr.onload = function () {
+    //     const serverResponse = xhr.response;
+    //     const listedItems = serverResponse.response;
+    //     var finalShareStr = "";
+    //     var i;
+    //     for (i = 0; i < listedItems.length; i++) {
+    //         // console.log(i)
+    //         // console.log(listedItems[i])
+    //         var shareObj = listedItems[i];
+    //         var currentItem = formatShareElement(shareObj);
+    //         finalShareStr += currentItem;
+    //     }
+    //     sharesElement.innerHTML = finalShareStr;
+    //     // console.log(listedItems);
+    // }
+    // xhr.send();
 
 </script>
 {% endblock content %}
