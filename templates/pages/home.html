@@ -42,7 +42,7 @@ home
         xhr1.setRequestHeader("X-Requested-With", "XMLHttpRequest")
         xhr1.onload = function () {
             const serverResponse = xhr1.response;
-            // console.log(serverResponse)
+            console.log(xhr1.status, serverResponse)
             loadShares(sharesElement)
         }
         xhr1.send(myFormData)
