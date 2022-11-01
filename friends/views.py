@@ -16,6 +16,7 @@ def home_view(request, *args, **kwargs):
     return render(request,"pages/home.html", context={}, status=200 ) 
 
 def share_create_view(request, *args, **kwargs):
+    # print(abc)
     def is_ajax(request):
         return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
 
@@ -35,18 +36,21 @@ def share_create_view(request, *args, **kwargs):
         # do other form related logic
         obj.save()
         if (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
-            return JsonResponse({}, status=201) # 201 = created items
+            return JsonResponse(obj.serialize(), status=201) # 201 = created items
 
         if next_url != None and url_has_allowed_host_and_scheme(next_url, ALLOWED_HOSTS):
             return redirect(next_url)
         form= ShareForm()
+    if form.errors:
+        if (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
+            return JsonResponse(form.errors, status=400)
     return render(request, 'components/form.html', context={"form": form})
 
 def share_list_view(request, *args, **kwargs):
     # REST API VIEW. consume by javascript or swift/java/ios/android
     # return json data
     qs= Share.objects.all()
-    shares_list= [{"id": x.id, "content": x.content, "likes": random.randint(0, 129)} for x in qs]
+    shares_list= [x.serialize() for x in qs]
     data = {
         "isUser": False,
         "response":shares_list

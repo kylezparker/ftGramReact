@@ -3,6 +3,7 @@ from django import forms
 from .models import Share
 
 MAX_SHARE_LENGTH = 240
+
 class ShareForm(forms.ModelForm):
     class Meta: 
         model = Share
