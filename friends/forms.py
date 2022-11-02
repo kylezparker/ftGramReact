@@ -1,8 +1,10 @@
 from django import forms
+from django.conf import settings
 
 from .models import Share
 
-MAX_SHARE_LENGTH = 240
+MAX_SHARE_LENGTH = settings.MAX_SHARE_LENGTH
+
 
 class ShareForm(forms.ModelForm):
     class Meta: 

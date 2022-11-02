@@ -5,18 +5,38 @@ from django.http import HttpResponse, Http404, JsonResponse
 from django.utils.http import url_has_allowed_host_and_scheme
 from .forms import ShareForm
 from .models import Share
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
 # Create your views here.
-
+from .serializers import ShareSerializer
 
 ALLOWED_HOSTS = settings.ALLOWED_HOSTS
 
 
 
 def home_view(request, *args, **kwargs):
-    print(request.user)
+    print(request.user or None)
     return render(request,"pages/home.html", context={}, status=200 ) 
 
+@api_view(['POST']) # http method the client == POST 
 def share_create_view(request, *args, **kwargs):
+    serializer = ShareSerializer(data=request.POST)
+    if serializer.is_valid(raise_exception=True):
+        serializer.save(user=request.user)
+        return Response(serializer.data, status=201)
+    return Response({}, status=400)
+
+
+def share_create_view_pure_django(request, *args, **kwargs):
+    '''
+    REST API Create View -> DRF
+    '''
+    user = request.user
+    if not request.user.is_authenticated:
+        user = None
+        if (request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'):
+            return JsonResponse({}, status=401)
+        return redirect(settings.LOGIN_URL)
     # print(abc)
     def is_ajax(request):
         return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
@@ -35,6 +55,7 @@ def share_create_view(request, *args, **kwargs):
     if form.is_valid():
         obj= form.save(commit=False)
         # do other form related logic
+        obj.user = request.user
         obj.save()
         if (request.headers.get('x-requested-with') == 'XMLHttpRequest'):
             return JsonResponse(obj.serialize(), status=201) # 201 = created items
@@ -47,18 +68,36 @@ def share_create_view(request, *args, **kwargs):
             return JsonResponse(form.errors, status=400)
     return render(request, 'components/form.html', context={"form": form})
 
-def share_list_view(request, *args, **kwargs):
+def share_list_view_pure_django(request, *args, **kwargs):
     # REST API VIEW. consume by javascript or swift/java/ios/android
     # return json data
-    qs= Share.objects.all()
-    shares_list= [x.serialize() for x in qs]
+    qs = Share.objects.all()
+    shares_list = [x.serialize() for x in qs]
     data = {
         "isUser": False,
         "response":shares_list
     }
     return JsonResponse(data)
 
+
+
+
+@api_view(['GET'])
 def share_detail_view(request, share_id, *args, **kwargs):
+    qs = Share.objects.filter(id=share_id)
+    if not qs.exists():
+        return Response({}, status=404)
+    obj = qs.first()
+    serializer = ShareSerializer(obj)
+    return Response(serializer.data, status=200)
+
+@api_view(['GET'])
+def share_list_view(request, *args, **kwargs):
+    qs = Share.objects.all()
+    serializer = ShareSerializer(qs, many=True)
+    return Response(serializer.data)
+
+def share_detail_view_pure_django(request, share_id, *args, **kwargs):
     # REST API VIEW. consume by javascript or swift/java/ios/android
     # return json data
     data = {
