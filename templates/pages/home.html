@@ -90,40 +90,42 @@ home
             } else if (xhr1.status === 401) {
                 alert("You must login to post.")
                 window.location.href = "/login"
-            }
-            // const contentError = errorJson.content;
-            // console.log(errorJson.content)
-            // let contentErrorMsg;
-            // if (contentError) {
-            //     contentErrorMsg = contentError[0];
-            // } else {
-            //     alert("An error occured. Please try again.");
-            // }
-            // console.log(contentErrorMsg);
-            // if (contentErrorMsg) {
-            //     handleShareFormError(contentErrorMsg, true)
-            // } else {
-            //     alert("An error occured. Please try again.")
-            // }
-            // console.log(contentErrorMsg)
+            } else if (xhr1.status === 403) {
+                alert("You must login to post.")
+                window.location.href = "/login"
+                // const contentError = errorJson.content;
+                // console.log(errorJson.content)
+                // let contentErrorMsg;
+                // if (contentError) {
+                //     contentErrorMsg = contentError[0];
+                // } else {
+                //     alert("An error occured. Please try again.");
+                // }
+                // console.log(contentErrorMsg);
+                // if (contentErrorMsg) {
+                //     handleShareFormError(contentErrorMsg, true)
+                // } else {
+                //     alert("An error occured. Please try again.")
+                // }
+                // console.log(contentErrorMsg)
 
 
-            //     } else {
-            //         alert("An error occured. Please try again.")
-            //     }
-            //     console.log(contentErrorMsg)
+                //     } else {
+                //         alert("An error occured. Please try again.")
+                //     }
+                //     console.log(contentErrorMsg)
 
-            //     if (contentErrorMsg) {
-            //         handleShareFormError(contentErrorMsg, true)
-            //     } else {
-            //         alert("An error occured. Please try again")
-            //     }
-            // } else {
-            //     alert("An error occured. Please try again")
-            // 
-            // console.log(contentErrorMsg)
+                //     if (contentErrorMsg) {
+                //         handleShareFormError(contentErrorMsg, true)
+                //     } else {
+                //         alert("An error occured. Please try again")
+                //     }
+                // } else {
+                //     alert("An error occured. Please try again")
+                // 
+                // console.log(contentErrorMsg)
 
-            else if (xhr1.status === 500) {
+            } else if (xhr1.status === 500) {
                 alert("There was a server error.");
             }
         }

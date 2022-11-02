@@ -5,8 +5,10 @@ from django.http import HttpResponse, Http404, JsonResponse
 from django.utils.http import url_has_allowed_host_and_scheme
 from .forms import ShareForm
 from .models import Share
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
 # Create your views here.
 from .serializers import ShareSerializer
 
@@ -18,7 +20,11 @@ def home_view(request, *args, **kwargs):
     print(request.user or None)
     return render(request,"pages/home.html", context={}, status=200 ) 
 
+
+
+# @authentication_classes([SessionAuthentication, MyCustomAuth]
 @api_view(['POST']) # http method the client == POST 
+@permission_classes([IsAuthenticated]) 
 def share_create_view(request, *args, **kwargs):
     serializer = ShareSerializer(data=request.POST)
     if serializer.is_valid(raise_exception=True):
@@ -90,6 +96,20 @@ def share_detail_view(request, share_id, *args, **kwargs):
     obj = qs.first()
     serializer = ShareSerializer(obj)
     return Response(serializer.data, status=200)
+
+@api_view(['DELETE', "POST"])
+@permission_classes([IsAuthenticated])
+def share_delete_view(request, share_id, *args, **kwargs):
+    qs = Share.objects.filter(id=share_id)
+    if not qs.exists():
+        return Response({}, status=404)
+    qs = qs.filter(user=request.user)
+    if not qs.exists():
+        return Response({"message": "You cannot delete this share"}, status=401)
+    obj = qs.first()
+    obj.delete()
+    # serializer = ShareSerializer(obj)
+    return Response({"message": "Share removed"}, status=200)
 
 @api_view(['GET'])
 def share_list_view(request, *args, **kwargs):
