@@ -12,6 +12,8 @@ class ShareLike(models.Model):
 
 class Share(models.Model):
     # maps to sql data
+    # reshare
+    parent = models.ForeignKey('self', null=True, on_delete=models.SET_NULL)
     user = models.ForeignKey(User, on_delete=models.CASCADE) # many users can own many tweets
     likes = models.ManyToManyField(User, related_name='share_user', blank=True, through=ShareLike )
     content = models.TextField(blank=True, null=True)
@@ -24,7 +26,12 @@ class Share(models.Model):
     class Meta:
         ordering = ['-id']
 
+    @property
+    def is_reshare(self):
+        return self.parent != None
+
     def serialize(self):
+        # can remove
         return {
             "id":self.id,
             "content":self.content,

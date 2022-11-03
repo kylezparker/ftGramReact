@@ -14,11 +14,11 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from friends.views import (
-    home_view, 
     share_action_view,
     share_delete_view,
+    home_view, 
     share_detail_view, 
     share_list_view,
     share_create_view,
@@ -33,4 +33,5 @@ urlpatterns = [
     path('api/friends/action', share_action_view),
     path('api/friends/<int:share_id>/delete', share_delete_view),
     path('friends/<int:share_id>', share_detail_view),
+    # path('api/friends/', include('friends.urls')),
 ]

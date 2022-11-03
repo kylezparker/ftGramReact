@@ -10,7 +10,11 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 # Create your views here.
-from .serializers import ShareSerializer, ShareActionSerializer
+from .serializers import (
+    ShareSerializer, 
+    ShareActionSerializer, 
+    ShareCreateSerializer,
+)
 
 ALLOWED_HOSTS = settings.ALLOWED_HOSTS
 
@@ -26,7 +30,7 @@ def home_view(request, *args, **kwargs):
 @api_view(['POST']) # http method the client == POST 
 @permission_classes([IsAuthenticated]) 
 def share_create_view(request, *args, **kwargs):
-    serializer = ShareSerializer(data=request.POST)
+    serializer = ShareCreateSerializer(data=request.POST)
     if serializer.is_valid(raise_exception=True):
         serializer.save(user=request.user)
         return Response(serializer.data, status=201)
@@ -104,29 +108,36 @@ def share_action_view(request, *args, **kwargs):
     id is required
     action options: like, unlike, retweet
     '''
-    serializer = ShareActionSerializer(request.POST)
+    print(request.POST, request.data);
+    serializer = ShareActionSerializer(data=request.data);
     if serializer.is_valid(raise_exception=True):
-        data = serializer.validated_data
-        share_id = data.get("id")
-        action = data.get("action")
-
-    qs = Share.objects.filter(id=share_id)
-    if not qs.exists():
-        return Response({}, status=404)
-    obj = qs.first()
-    if action == 'like':
-        obj.likes.add(request.user)
-    elif action == 'unlike':
-        obj.likes.remove(request.user)
-    elif action == 'retweet':
-        # this is todo
-        pass
-    if request.user in obj.likes.all():
-        obj.likes.remove(request.user)
-    else:
-        obj.likes.add(request.user)
-    # serializer = ShareSerializer(obj)
-    return Response({"message": "Share removed"}, status=200)
+        data = serializer.validated_data;
+        share_id = data.get("id");
+        action = data.get("action");
+        content = data.get("content")
+        qs = Share.objects.filter(id=share_id);
+        if not qs.exists():
+            return Response({}, status=404);
+        obj = qs.first();
+        if action == 'like':
+            obj.likes.add(request.user);
+            serializer = ShareSerializer(obj);
+            return Response(serializer.data, status=200);
+        elif action == 'unlike':
+            obj.likes.remove(request.user);
+        elif action == 'retweet':
+            parent_obj = obj;
+            new_share = Share.objects.create(user=request.user, parent=parent_obj,content=content);
+            serializer = ShareSerializer(new_share);
+            return Response(serializer.data, status=200);
+    return Response({}, status=200);
+    # if request.user in obj.likes.all():
+    #     obj.likes.remove(request.user)
+    # else:
+    #     obj.likes.add(request.user)
+    # # serializer = ShareSerializer(obj)
+    #     pass
+    return Response({}, status=200)
 
 @api_view(['DELETE', 'POST'])
 @permission_classes([IsAuthenticated])

@@ -30,6 +30,22 @@ home
 </div>
 <script>
 
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
     function handleShareFormError(msg, display) {
         var myErrorDiv = document.getElementById("share-create-form-error");
         if (display === true) {
@@ -181,33 +197,50 @@ home
 
 
 
-    function handleDidLike(share_id, currentCount) {
+    function handleShareActionBtn(share_id, currentCount, action) {
         console.log(share_id, currentCount);
-        const url = "/api/tweets/action"
+        const url = "/api/friends/action"
         const method = "POST"
         const data = JSON.stringify({
             id: share_id,
-            action: 'like',
+            action: action,
         })
         const xhr = new XMLHttpRequest()
+        const csrftoken = getCookie('csrftoken');
         xhr.open(method, url)
         xhr.setRequestHeader('Content-Type', 'application/json')
         xhr.setRequestHeader("HTTP_X_REQUESTED_WITH", "XMLHttpRequest");
         xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+        // csrf for js, done differently than with forms/django
+        xhr.setRequestHeader("X-CSRFToken", csrftoken)
         xhr.onload = function () {
             console.log(xhr.status, xhr.response)
+            // react.js will handle the state much better
+            loadShares(sharesContainerElement)
         }
         xhr.send(data)
-        return;
+        return
+    }
+
+
+    function ReshareBtn(share) {
+        return "<button class='btn btn-outline-success btn-sm' onclick=handleShareActionBtn(" + share.id + ","
+            + share.likes + ",'retweet')>Reshare</button>";
+    }
+
+    function UnLikeBtn(share) {
+        return "<button class='btn btn-outline-primary btn-sm' onclick=handleShareActionBtn(" + share.id + ","
+            + share.likes + ",'unlike')>Unlike</button>";
     }
 
     function LikeBtn(share) {
-        return "<button class='btn btn-primary btn-sm' onclick=handleDidLike(" + share.id + ","
-            + share.likes + ")>" + share.likes + " Likes</button>";
+        return "<button class='btn btn-primary btn-sm' onclick=handleShareActionBtn(" + share.id + ","
+            + share.likes + ",'like')>" + share.likes + " Likes</button>";
     }
+
     function formatShareElement(share) {
         var formattedShare = "<div class='col-12 col-md-10 mx-auto border rounded py-3 mb-4 share' id='share-" + share.id + "'><p>"
-            + share.content + "</p><div class='btn-group'>" + LikeBtn(share) + "</div></div>";
+            + share.content + "</p><div class='btn-group'>" + LikeBtn(share) + UnLikeBtn(share) + ReshareBtn(share) + "</div></div>";
         return formattedShare;
     }
 
