@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from friends.views import (
     home_view, 
+    share_action_view,
     share_delete_view,
     share_detail_view, 
     share_list_view,
@@ -29,6 +30,7 @@ urlpatterns = [
     path('', home_view),
     path('create-share', share_create_view),
     path('friends', share_list_view),
+    path('api/friends/action', share_action_view),
     path('api/friends/<int:share_id>/delete', share_delete_view),
     path('friends/<int:share_id>', share_detail_view),
 ]

@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 # Create your views here.
-from .serializers import ShareSerializer
+from .serializers import ShareSerializer, ShareActionSerializer
 
 ALLOWED_HOSTS = settings.ALLOWED_HOSTS
 
@@ -97,7 +97,38 @@ def share_detail_view(request, share_id, *args, **kwargs):
     serializer = ShareSerializer(obj)
     return Response(serializer.data, status=200)
 
-@api_view(['DELETE', "POST"])
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def share_action_view(request, *args, **kwargs):
+    '''
+    id is required
+    action options: like, unlike, retweet
+    '''
+    serializer = ShareActionSerializer(request.POST)
+    if serializer.is_valid(raise_exception=True):
+        data = serializer.validated_data
+        share_id = data.get("id")
+        action = data.get("action")
+
+    qs = Share.objects.filter(id=share_id)
+    if not qs.exists():
+        return Response({}, status=404)
+    obj = qs.first()
+    if action == 'like':
+        obj.likes.add(request.user)
+    elif action == 'unlike':
+        obj.likes.remove(request.user)
+    elif action == 'retweet':
+        # this is todo
+        pass
+    if request.user in obj.likes.all():
+        obj.likes.remove(request.user)
+    else:
+        obj.likes.add(request.user)
+    # serializer = ShareSerializer(obj)
+    return Response({"message": "Share removed"}, status=200)
+
+@api_view(['DELETE', 'POST'])
 @permission_classes([IsAuthenticated])
 def share_delete_view(request, share_id, *args, **kwargs):
     qs = Share.objects.filter(id=share_id)
